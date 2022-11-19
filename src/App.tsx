@@ -3,51 +3,75 @@ import data from "./data/db.json";
 import { useKeyPress } from "./hooks/useKeyPress";
 
 function App() {
-    const text = data[0].text;
+    const text = data[0].text.toLowerCase();
 
-    const [left, setLeft] = useState<string>("");
-    const [currentChar, setCurrentChar] = useState<string>(text.charAt(0));
-    const [right, setRight] = useState<string>(text.substring(1));
+    const [matrix, setMatrix] = useState<string[][]>([]);
+    const [currentChar, setCurrentChar] = useState<string>("0-0");
     const key = useKeyPress();
 
     useEffect(() => {
         if (key === "" || null || undefined) return;
-        setLeft((prev) => prev.concat(currentChar));
-        setCurrentChar(right.charAt(0));
-        setRight((prev) => prev.substring(1));
+        const [i, j] = currentChar.split("-");
+        if (key === " " && matrix[parseInt(i)].length - 1 === parseInt(j))
+            setCurrentChar((prev) => {
+                const [i, j] = prev.split("-");
+                return (parseInt(i) + 1).toString() + "-" + "0";
+            });
+        else {
+            const [i, j] = currentChar.split("-");
+            if (matrix[parseInt(i)].length - 1 === parseInt(j)) return;
+            setCurrentChar((prev) => {
+                const [i, j] = prev.split("-");
+                return i + "-" + (parseInt(j) + 1).toString();
+            });
+        }
     }, [key]);
+
+    useEffect(() => {
+        const arr: string[][] = [];
+        const wordArr = text.split(" ");
+
+        wordArr.forEach((wrd) => {
+            const tmp = [];
+            for (let i = 0; i < wrd.length; i++) {
+                tmp.push(wrd[i]);
+            }
+            arr.push(tmp);
+        });
+
+        setMatrix(arr);
+    }, []);
 
     return (
         <div
             style={{
-                height: "100vh",
-                padding: "1rem",
+                padding: "5rem",
                 width: "100%",
-                whiteSpace: "break-spaces",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                columnGap: "0.5rem",
+                flexWrap: "wrap",
+                fontSize: "40px",
+                color: "GrayText",
             }}>
-            <div>
-                <span
+            {matrix.map((str: string[], i: number) => (
+                <div
+                    key={i}
                     style={{
-                        color: "green",
+                        display: "flex",
+                        alignItems: "center",
                     }}>
-                    {left}
-                </span>
-                <span
-                    style={{
-                        color: "red",
-                    }}>
-                    {currentChar}
-                </span>
-                <span
-                    style={{
-                        color: "blue",
-                    }}>
-                    {right}
-                </span>
-            </div>
+                    {str.map((l: string, j: number) => (
+                        <div
+                            key={j}
+                            style={{
+                                color:
+                                    currentChar === i.toString() + "-" + j.toString() ? "red" : "",
+                            }}>
+                            {l}
+                        </div>
+                    ))}
+                </div>
+            ))}
         </div>
     );
 }
